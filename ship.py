@@ -15,12 +15,17 @@ class Ship:
         # Draws and starts each new ship at the bottom center of the screen
         self.rect.midbottom = self.screen_rect.midbottom
         self.moving_right = False
+        self.moving_left = False
 
     def update(self):
         # Update the ships position based on the movement flag
         # Move the ship to the right by increasing the ship's rect.x value by 1 pixel
         if self.moving_right:
             self.rect.x += 1
+        # We used two if statements instead of an if/elif so that the right arrow key doesn't have priority
+        # This makes the movements more accurate when switching from right to left
+        if self.moving_left:
+            self.rect.x -= 1
 
     def blitme(self):
         # Draw the ship at its current location
