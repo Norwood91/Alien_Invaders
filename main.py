@@ -3,6 +3,7 @@ import sys
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 class AlienInvader:
     def __init__(self):
@@ -18,6 +19,8 @@ class AlienInvader:
         # This is the param that gives Ship access to the game's resources, like the screen object
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+        self._create_fleet()
 
     def run_game(self):
         while True:
@@ -73,6 +76,10 @@ class AlienInvader:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
 
+    def _create_fleet(self):
+        alien = Alien(self)
+        self.aliens.add(alien)
+
     def _update_screen(self):
         # Update images on the screen, and flip to the new screen
         self.screen.fill(self.settings.bg_color)
@@ -82,6 +89,8 @@ class AlienInvader:
         # On each one
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        # The draw method requires one argument: a surface (self.screen) on which to draw the element to
+        self.aliens.draw(self.screen)
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 
