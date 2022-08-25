@@ -2,7 +2,7 @@ import pygame
 import sys
 from settings import Settings
 from ship import Ship
-
+from bullet import Bullet
 
 class AlienInvader:
     def __init__(self):
@@ -17,12 +17,14 @@ class AlienInvader:
         # The self argument refers to the current instance of Alien_invader
         # This is the param that gives Ship access to the game's resources, like the screen object
         self.ship = Ship(self)
+        self.bullets = pygame.sprite.Group()
 
     def run_game(self):
         while True:
             self._check_events()
             # This will update the ship's position after we've checked for keyboard events and before we update screen
             self.ship.update()
+            self._update_bullets()
             self._update_screen()
 
     def _check_events(self):
@@ -46,6 +48,8 @@ class AlienInvader:
                 self.ship.moving_left = True
             elif event.key == pygame.K_q:
                 sys.exit()
+            elif event.key == pygame.K_SPACE:
+                self._fire_bullet()
 
     def _check_keyup_events(self, event):
         if event.type == pygame.KEYUP:
@@ -54,10 +58,30 @@ class AlienInvader:
             elif event.key == pygame.K_LEFT:
                 self.ship.moving_left = False
 
+    def _fire_bullet(self):
+        # Create a new bullet and add it to the bullets group
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+
+    def _update_bullets(self):
+        # Update bullets and get rid of old bullets
+        # Update bullet positions
+        self.bullets.update()
+        # Get rid of bullets that have disappeared
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+
     def _update_screen(self):
         # Update images on the screen, and flip to the new screen
         self.screen.fill(self.settings.bg_color)
         self.ship.blitme()
+        # bullets.sprites() returns a list of all sprites in the group 'bullets'
+        # To draw all fired bullets to the screen, we loop through the sprites in 'bullets' and call draw_bullet()
+        # On each one
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 
