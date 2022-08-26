@@ -28,6 +28,7 @@ class AlienInvader:
             # This will update the ship's position after we've checked for keyboard events and before we update screen
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -76,6 +77,12 @@ class AlienInvader:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
 
+    def _update_aliens(self):
+        # Update the positions of all aliens in the fleet
+        # The update() method calls each alien's update() method
+        self._check_fleet_edges()
+        self.aliens.update()
+
     def _create_fleet(self):
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
@@ -107,12 +114,26 @@ class AlienInvader:
         alien = Alien(self)
         # rect.SIZE contains a tuple with the width and height of a rect object
         alien_width, alien_height = alien.rect.size
-        alien.xcoord = alien_width + 2 * alien_width * alien_number
-        alien.rect.x = alien.xcoord
+        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.rect.x = alien.x
         # Changes an alien's ycoord value when it's not in the first row by starting with one alien's height to create
         # empty space at the top of the screen. Each row starts TWO alien heights below the previous row.
         alien.rect.y = alien_height + 2 * alien.rect.height * row_number
         self.aliens.add(alien)
+
+
+    def _check_fleet_edges(self):
+        for alien in self.aliens.sprites():
+            # If alien is at either the right or left edge of the screen
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+
+    def _change_fleet_direction(self):
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
 
 
     def _update_screen(self):
