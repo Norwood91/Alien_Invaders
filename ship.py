@@ -22,6 +22,12 @@ class Ship:
         self.moving_right = False
         self.moving_left = False
 
+    def center_ship(self):
+        # Center ship on the screen
+        self.rect.midbottom = self.screen_rect.midbottom
+        # We reset the self.x attribute so it allows us to track the ship's exact position
+        self.x = float(self.rect.x)
+
     def update(self):
         # Update the ships x value
         # self.rect.right returns the x-coord of the right edge of the ship's rectangle. If that value returned is less

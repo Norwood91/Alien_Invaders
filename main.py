@@ -1,9 +1,11 @@
 import pygame
 import sys
+from time import sleep
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from game_stats import GameStats
 
 class AlienInvader:
     def __init__(self):
@@ -15,6 +17,8 @@ class AlienInvader:
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption('Alien Invaders')
+        # Create an instance to store game stats
+        self.stats = GameStats(self)
         # The self argument refers to the current instance of Alien_invader
         # This is the param that gives Ship access to the game's resources, like the screen object
         self.ship = Ship(self)
@@ -25,10 +29,11 @@ class AlienInvader:
     def run_game(self):
         while True:
             self._check_events()
-            # This will update the ship's position after we've checked for keyboard events and before we update screen
-            self.ship.update()
-            self._update_bullets()
-            self._update_aliens()
+            if self.stats.game_active:
+                # This will update the ship's position after we've checked for keyboard events and before we update screen
+                self.ship.update()
+                self._update_bullets()
+                self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -91,13 +96,19 @@ class AlienInvader:
             self._create_fleet()
 
 
-
     def _update_aliens(self):
         # Update the positions of all aliens in the fleet
         # The update() method calls each alien's update() method
         self._check_fleet_edges()
         self.aliens.update()
-
+        # Look for alien and user ship collision
+        # The spritecollideany takes two arguments: a sprite and a group (aliens). The function looks for any member of the group
+        # that has collided with the sprite (user ship) and stops looping through the group as soon as it finds one that
+        # has collided.
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            self._ship_hit()
+        # Look for aliens hitting the bottom of the screen
+        self._check_aliens_bottom()
 
 
     def _create_fleet(self):
@@ -152,6 +163,28 @@ class AlienInvader:
             alien.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
 
+
+    def _ship_hit(self):
+        if self.stats.ships_remaining > 0:
+            self.stats.ships_remaining -= 1
+            # Get rid of aliens and bullets
+            self.aliens.empty()
+            self.bullets.empty()
+            # Create new fleet and center the ship
+            self._create_fleet()
+            self.ship.center_ship()
+            # Pause
+            sleep(0.5)
+        else:
+            self.stats.game_active = False
+
+    def _check_aliens_bottom(self):
+        # Check if aliens reached the bottom
+        screen_rect = self.screen.get_rect()
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= screen_rect.bottom:
+                self._ship_hit()
+                break
 
     def _update_screen(self):
         # Update images on the screen, and flip to the new screen
