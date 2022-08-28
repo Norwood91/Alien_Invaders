@@ -7,6 +7,7 @@ from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
 
 class AlienInvader:
     def __init__(self):
@@ -20,6 +21,7 @@ class AlienInvader:
         pygame.display.set_caption('Alien Invaders')
         # Create an instance to store game stats
         self.stats = GameStats(self)
+        self.scoreboard = Scoreboard(self)
         # The self argument refers to the current instance of Alien_invader
         # This is the param that gives Ship access to the game's resources, like the screen object
         self.ship = Ship(self)
@@ -62,6 +64,8 @@ class AlienInvader:
             # Reset the game stats
             self.stats.reset_stats()
             self.stats.game_active = True
+            self.scoreboard.prep_score()
+            self.scoreboard.prep_level()
             self.aliens.empty()
             self.bullets.empty()
 
@@ -108,6 +112,16 @@ class AlienInvader:
         # Check for any bullets that have hit aliens, if so get rid of the bullet and the alien
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
 
+        if collisions:
+            # Collisions is a dictionary and every bullet that collides with an alien becomes a key in that dictionary
+            # And the value for each bullet key is a list, with all aliens hit by that specific bullet
+            for aliens in collisions.values():
+                # So we multiply the value of each alien (50 points) by the number of aliens in each list and add this
+                # amount to the current score
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.scoreboard.prep_score()
+            self.scoreboard.check_high_score()
+
         if not self.aliens:
             # Destroy existing bullets and create new fleet
             # The empty() method removes all remaining sprites from a group.
@@ -115,6 +129,8 @@ class AlienInvader:
             # Create_fleet method fills the screen with aliens again
             self._create_fleet()
             self.settings.increase_speed()
+            self.stats.level += 1
+            self.scoreboard.prep_level()
 
 
     def _update_aliens(self):
@@ -223,7 +239,7 @@ class AlienInvader:
             bullet.draw_bullet()
         # The draw method requires one argument: a surface (self.screen) on which to draw the element to
         self.aliens.draw(self.screen)
-
+        self.scoreboard.show_score()
         # Draw button to the screen if the game is inactive
         if not self.stats.game_active:
             self.play_button.draw_button()
