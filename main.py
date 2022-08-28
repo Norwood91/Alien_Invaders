@@ -6,6 +6,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 
 class AlienInvader:
     def __init__(self):
@@ -25,6 +26,7 @@ class AlienInvader:
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self._create_fleet()
+        self.play_button = Button(self, 'Play Game')
 
     def run_game(self):
         while True:
@@ -47,7 +49,25 @@ class AlienInvader:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
 
+
+    def _check_play_button(self, mouse_pos):
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        # Collidepoint checks to see if the mouse click is on the button's rectangle
+        if button_clicked and not self.stats.game_active:
+            self.settings.initialize_dynamic_settings()
+            # Reset the game stats
+            self.stats.reset_stats()
+            self.stats.game_active = True
+            self.aliens.empty()
+            self.bullets.empty()
+
+            self._create_fleet()
+            self.ship.center_ship()
+            pygame.mouse.set_visible(False)
 
     def _check_keydown_events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -94,6 +114,7 @@ class AlienInvader:
             self.bullets.empty()
             # Create_fleet method fills the screen with aliens again
             self._create_fleet()
+            self.settings.increase_speed()
 
 
     def _update_aliens(self):
@@ -175,8 +196,13 @@ class AlienInvader:
             self.ship.center_ship()
             # Pause
             sleep(0.5)
+
         else:
             self.stats.game_active = False
+            pygame.mouse.set_visible(True)
+            self.play_button = Button(self, 'Play Again')
+
+
 
     def _check_aliens_bottom(self):
         # Check if aliens reached the bottom
@@ -197,6 +223,10 @@ class AlienInvader:
             bullet.draw_bullet()
         # The draw method requires one argument: a surface (self.screen) on which to draw the element to
         self.aliens.draw(self.screen)
+
+        # Draw button to the screen if the game is inactive
+        if not self.stats.game_active:
+            self.play_button.draw_button()
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 
