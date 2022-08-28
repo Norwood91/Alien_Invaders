@@ -1,8 +1,10 @@
 import pygame
+from pygame.sprite import Sprite
 
-class Ship:
+class Ship(Sprite):
     # Class to manage the user's ship
     def __init__(self, ai_game):
+        super().__init__()
         # Initialize the ship and set its starting position
         # RECT MEANS RECTANGLE
         self.screen = ai_game.screen

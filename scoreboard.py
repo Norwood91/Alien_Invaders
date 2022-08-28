@@ -1,7 +1,10 @@
 import pygame.font
+from pygame.sprite import Group
+from ship import Ship
 
 class Scoreboard:
     def __init__(self, ai_game):
+        self.ai_game = ai_game
         self.screen = ai_game.screen
         self.screen_rect = self.screen.get_rect()
         self.settings = ai_game.settings
@@ -39,6 +42,8 @@ class Scoreboard:
         self.level_rect = self.level_image.get_rect()
         self.level_rect.centerx = self.screen_rect.centerx
         self.level_rect.top = self.score_rect.top
+
+
 
     def check_high_score(self):
         if self.stats.score > self.stats.high_score:
